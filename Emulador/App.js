@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -11,52 +11,67 @@ import {
 export default function App() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
+  const ws = useRef(null);
+
+  useEffect(() => {
+    ws.current = new WebSocket("ws://10.0.2.2:3000");
+
+    ws.current.onopen = () => console.log("Atendente conectado");
+
+    ws.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.type === "history") {
+        setMessages(data.messages);
+      }
+
+      if (data.type === "newMessage") {
+        setMessages((prev) => [...prev, data.msg]);
+      }
+    };
+
+    return () => ws.current.close();
+  }, []);
 
   function sendMessage() {
     if (!text.trim()) return;
 
-    const newMsg = {
+    const msg = {
       id: Date.now(),
+      sender: "attendant",
       text,
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
-      me: true,
     };
 
-    setMessages([...messages, newMsg]);
+    ws.current.send(JSON.stringify(msg));
     setText("");
-
-    // simula resposta
-    setTimeout(() => {
-      setMessages((prev) => [...prev]);
-    }, 600);
   }
 
   return (
     <View style={styles.app}>
-      {/* HEADER */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Chat</Text>
+        <Text style={styles.headerTitle}>Atendente</Text>
         <Text style={styles.subtitle}>Conectado</Text>
       </View>
 
-      {/* CHAT WINDOW */}
       <ScrollView style={styles.chatWindow}>
-        {messages.length === 0 && (
-          <Text style={styles.note}>Nenhuma mensagem ainda</Text>
-        )}
-
         {messages.map((msg) => (
           <View
             key={msg.id}
-            style={[styles.message, msg.me ? styles.me : styles.peer]}
+            style={[
+              styles.message,
+              msg.sender === "attendant" ? styles.me : styles.peer,
+            ]}
           >
             <View
               style={[
                 styles.bubble,
-                msg.me ? styles.bubbleMe : styles.bubblePeer,
+                msg.sender === "attendant"
+                  ? styles.bubbleMe
+                  : styles.bubblePeer,
               ]}
             >
               <Text style={styles.bubbleText}>{msg.text}</Text>
@@ -66,13 +81,12 @@ export default function App() {
         ))}
       </ScrollView>
 
-      {/* FORM */}
       <View style={styles.form}>
         <TextInput
           style={styles.input}
-          placeholder="Digite sua mensagem..."
           value={text}
           onChangeText={setText}
+          placeholder="Escreva..."
         />
         <TouchableOpacity style={styles.sendBtn} onPress={sendMessage}>
           <Text style={styles.sendText}>Enviar</Text>
@@ -121,13 +135,6 @@ const styles = StyleSheet.create({
     padding: 18,
   },
 
-  note: {
-    textAlign: "center",
-    color: COLORS.muted,
-    padding: 14,
-    fontSize: 13,
-  },
-
   message: {
     maxWidth: "78%",
     marginVertical: 6,
@@ -148,30 +155,18 @@ const styles = StyleSheet.create({
   bubble: {
     padding: 10,
     borderRadius: 12,
-    shadowColor: "#0b1641",
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
   },
 
-  bubbleMe: {
-    backgroundColor: COLORS.meBg,
-  },
+  bubbleMe: { backgroundColor: COLORS.meBg },
+  bubblePeer: { backgroundColor: COLORS.peerBg },
 
-  bubblePeer: {
-    backgroundColor: COLORS.peerBg,
-  },
-
-  bubbleText: {
-    fontSize: 14,
-  },
+  bubbleText: { fontSize: 14 },
 
   time: {
     fontSize: 11,
     color: COLORS.muted,
     width: 38,
     textAlign: "center",
-    paddingBottom: 2,
   },
 
   form: {
@@ -188,13 +183,12 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "rgba(15,23,42,0.06)",
-    fontSize: 14,
+    borderColor: "#ccc",
   },
 
   sendBtn: {
     backgroundColor: COLORS.accent,
-    paddingHorizontal: 18,
+    paddingHorizontal: 20,
     borderRadius: 12,
     justifyContent: "center",
   },

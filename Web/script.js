@@ -1,49 +1,66 @@
-// Código simples para demonstrar envio local de mensagens.
 const chatWindow = document.getElementById("chatWindow");
 const input = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 
-// Função para criar um bloco de mensagem
-function addMessage(text, who = "me") {
-  // limpar nota inicial
-  const firstNote = chatWindow.querySelector(".note");
-  if (firstNote) firstNote.remove();
+const ws = new WebSocket("ws://localhost:3000");
 
-  const msg = document.createElement("div");
-  msg.className = `message ${who === "me" ? "message-me" : "message-peer"}`;
+// Renderizar mensagem
+function renderMessage(msg) {
+  const note = chatWindow.querySelector(".note");
+  if (note) note.remove();
+
+  const div = document.createElement("div");
+  div.className = `message ${
+    msg.sender === "client" ? "message-me" : "message-peer"
+  }`;
 
   const bubble = document.createElement("div");
   bubble.className = "bubble";
-  bubble.textContent = text;
+  bubble.textContent = msg.text;
 
   const time = document.createElement("div");
   time.className = "msg-time";
-  const now = new Date();
-  time.textContent = now.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  time.textContent = msg.time;
 
-  msg.appendChild(bubble);
-  msg.appendChild(time);
-  chatWindow.appendChild(msg);
+  div.appendChild(bubble);
+  div.appendChild(time);
+  chatWindow.appendChild(div);
 
-  // scroll automático para baixo
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-// Enviar mensagem
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+
+  if (data.type === "history") {
+    chatWindow.innerHTML = "";
+    data.messages.forEach(renderMessage);
+  }
+
+  if (data.type === "newMessage") {
+    renderMessage(data.msg);
+  }
+};
+
 function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
-  addMessage(text, "me");
+
+  const msg = {
+    id: Date.now(),
+    sender: "client",
+    text,
+    time: new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+
+  ws.send(JSON.stringify(msg));
   input.value = "";
-  input.focus();
-  simulateResponse(text); // apenas demonstra
 }
 
 sendBtn.addEventListener("click", sendMessage);
-
 input.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     e.preventDefault();

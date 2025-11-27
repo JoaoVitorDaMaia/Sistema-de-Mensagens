@@ -3,37 +3,32 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Chat - Demo</title>
+    <title>Chat Cliente</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="chat-app" aria-label="Aplicativo de Chat">
+    <main class="chat-app">
       <header class="chat-header">
-        <h1>Atendimento</h1>
-        <p class="subtitle">Chat cliente ↔ atendente (demo local)</p>
+        <h1>Cliente</h1>
+        <p class="subtitle">Conectado ao atendente</p>
       </header>
 
-      <section class="chat-window" id="chatWindow" aria-live="polite">
-        <!-- mensagens serão inseridas aqui via JS -->
-        <div class="note">
-          Conectado (demo). Escreva algo e pressione Enter ou clique em Enviar.
-        </div>
+      <section class="chat-window" id="chatWindow">
+        <div class="note">Carregando mensagens...</div>
       </section>
 
-      <form id="sendForm" class="chat-form" action="#" onsubmit="return false;">
+      <form class="chat-form" onsubmit="return false;">
         <input
           type="text"
           id="messageInput"
           class="chat-input"
-          placeholder="Escreva sua mensagem..."
-          aria-label="Mensagem"
+          placeholder="Digite sua mensagem..."
           autocomplete="off"
         />
-        <button id="sendBtn" class="chat-send" aria-label="Enviar mensagem">
-          Enviar
-        </button>
+        <button id="sendBtn" class="chat-send">Enviar</button>
       </form>
     </main>
+
     <script src="script.js"></script>
   </body>
 </html>
