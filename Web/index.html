@@ -3,24 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Chat Cliente</title>
+    <title>Chat Cliente (Web)</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="chat-app">
       <header class="chat-header">
-        <h1>Cliente</h1>
-        <p class="subtitle">Conectado ao atendente</p>
+        <h1 id="title">Chat</h1>
+        <p class="subtitle" id="subtitle">Desconectado</p>
       </header>
 
       <section class="chat-window" id="chatWindow">
-        <div class="note">Carregando mensagens...</div>
+        <div class="note">Sem mensagens</div>
       </section>
 
-      <form class="chat-form" onsubmit="return false;">
+      <form class="chat-form" id="form" onsubmit="return false;">
         <input
-          type="text"
-          id="messageInput"
+          id="input"
           class="chat-input"
           placeholder="Digite sua mensagem..."
           autocomplete="off"
@@ -28,6 +27,29 @@
         <button id="sendBtn" class="chat-send">Enviar</button>
       </form>
     </main>
+
+    <!-- Modal de escolha/login -->
+    <div class="overlay" id="overlay">
+      <div class="box">
+        <h2>Entrar</h2>
+        <div class="choice">
+          <button id="btnCliente">Sou Cliente</button>
+          <button id="btnAtendente">Sou Atendente</button>
+        </div>
+
+        <div id="formCliente" class="login hidden">
+          <input id="clienteNome" placeholder="Seu nome" />
+          <input id="clientePedido" placeholder="Número do pedido" />
+          <button id="enterCliente">Entrar como Cliente</button>
+        </div>
+
+        <div id="formAtendente" class="login hidden">
+          <input id="atendenteCPF" placeholder="CPF" />
+          <input id="atendenteSenha" placeholder="Senha" type="password" />
+          <button id="enterAtendente">Entrar como Atendente</button>
+        </div>
+      </div>
+    </div>
 
     <script src="script.js"></script>
   </body>
